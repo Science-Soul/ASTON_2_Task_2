@@ -26,16 +26,6 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService; // Тестируемый сервис, куда автоматически внедряется мок
 
-    /*@Test
-    @DisplayName("Успешное создание пользователя с валидными данными")
-    void createUser_ValidData_CallsDaoCreate() {
-        // Act (Действие)
-        userService.createUser("Иван", "ivan@test.com", 25);
-
-        // Assert (Проверка): убеждаемся, что метод create у DAO был вызван ровно 1 раз
-        verify(userDao, times(1)).create(any(User.class));
-    }*/
-
     @Test
     @DisplayName("Успешное создание пользователя с валидными данными")
     void createUser_ValidData_CallsDaoCreate() {

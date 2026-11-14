@@ -122,18 +122,20 @@ public class UserDaoImpl implements UserDao {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            User user = session.find(User.class, id);
-            if (user != null) {
-                session.remove(user);
-                transaction.commit();
-                logger.info("Пользователь с ID {} успешно удален", id);
-            } else {
-                logger.warn("Пользователь с ID {} не найден для удаления", id);
+            try {
+                User user = session.find(User.class, id);
+                if (user != null) {
+                    session.remove(user);
+                    transaction.commit();
+                    logger.info("Пользователь с ID {} успешно удален", id);
+                } else {
+                    logger.warn("Пользователь с ID {} не найден для удаления", id);
+                }
+            } catch (Exception e) {
+                if (transaction != null && transaction.isActive()) transaction.rollback();
+                logger.error("Ошибка при удалении пользователя с ID {}", id, e);
+                throw e;
             }
-        } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
-            logger.error("Ошибка при удалении пользователя с ID {}", id, e);
-            throw e;
         }
     }
 }

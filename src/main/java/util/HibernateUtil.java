@@ -54,6 +54,7 @@ public class HibernateUtil {
     public static void shutdown() {
         if (sessionFactory != null && !sessionFactory.isClosed()) {
             sessionFactory.close();
+            sessionFactory = null;
             logger.info("SessionFactory успешно закрыта.");
         }
     }

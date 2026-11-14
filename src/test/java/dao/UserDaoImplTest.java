@@ -138,4 +138,54 @@ class UserDaoImplTest {
         assertEquals(1, users.size());
         assertEquals("Первый", users.get(0).getName());
     }
+
+    @Test
+    @DisplayName("Read By ID: Поиск несуществующего пользователя возвращает пустой Optional")
+    void findById_NonExistentId_ReturnsEmptyOptional() {
+        Optional<User> found = userDao.findById(999L);
+
+        assertTrue(found.isEmpty(), "Для несуществующего ID должен возвращаться Optional.empty()");
+    }
+
+    @Test
+    @DisplayName("Read All: Получение списка из пустой таблицы возвращает пустой список")
+    void findAll_EmptyTable_ReturnsEmptyList() {
+        List<User> users = userDao.findAll();
+
+        assertNotNull(users, "Метод не должен возвращать null");
+        assertTrue(users.isEmpty(), "Список должен быть пустым");
+    }
+
+    @Test
+    @DisplayName("Update Constraint Violation: Попытка сменить email на уже занятый откатывает изменения")
+    void update_DuplicateEmail_RollsBackChanges() {
+        User firstUser = new User("Первый", "first@postgres.ru", 25);
+        User secondUser = new User("Второй", "second@postgres.ru", 30);
+        userDao.create(firstUser);
+        userDao.create(secondUser);
+
+        // Пытаемся присвоить второму пользователю email первого и заодно меняем имя
+        secondUser.setName("Второй Измененный");
+        secondUser.setEmail("first@postgres.ru");
+
+        assertDoesNotThrow(() -> userDao.update(secondUser));
+
+        // Проверяем, что в БД данные второго пользователя не изменились (транзакция откатилась)
+        Optional<User> unchangedUser = userDao.findById(secondUser.getId());
+        assertTrue(unchangedUser.isPresent());
+        assertEquals("second@postgres.ru", unchangedUser.get().getEmail());
+        assertEquals("Второй", unchangedUser.get().getName());
+    }
+
+    @Test
+    @DisplayName("Delete Non-Existent: Удаление несуществующего ID выполняется без ошибок")
+    void delete_NonExistentId_DoesNotThrow() {
+        userDao.create(new User("Существующий", "exist@postgres.ru", 28));
+
+        // Проверяем, что удаление несуществующей записи не роняет приложение и корректно закрывает транзакцию
+        assertDoesNotThrow(() -> userDao.delete(999L));
+
+        // Убеждаемся, что существующая запись осталась нетронутой
+        assertEquals(1, userDao.findAll().size());
+    }
 }

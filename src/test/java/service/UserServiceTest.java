@@ -5,6 +5,7 @@ import model.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,7 +26,7 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService; // Тестируемый сервис, куда автоматически внедряется мок
 
-    @Test
+    /*@Test
     @DisplayName("Успешное создание пользователя с валидными данными")
     void createUser_ValidData_CallsDaoCreate() {
         // Act (Действие)
@@ -33,7 +34,24 @@ class UserServiceTest {
 
         // Assert (Проверка): убеждаемся, что метод create у DAO был вызван ровно 1 раз
         verify(userDao, times(1)).create(any(User.class));
+    }*/
+
+    @Test
+    @DisplayName("Успешное создание пользователя с валидными данными")
+    void createUser_ValidData_CallsDaoCreate() {
+        // Act
+        userService.createUser("Иван", "ivan@test.com", 25);
+
+        // Assert: перехватываем объект, который сервис передал в DAO
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userDao, times(1)).create(userCaptor.capture());
+
+        User savedUser = userCaptor.getValue();
+        assertEquals("Иван", savedUser.getName());
+        assertEquals("ivan@test.com", savedUser.getEmail());
+        assertEquals(25, savedUser.getAge());
     }
+
 
     @Test
     @DisplayName("Ошибка при попытке создать пользователя с некорректным email")

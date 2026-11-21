@@ -1,4 +1,4 @@
-package model;
+package userservice.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
